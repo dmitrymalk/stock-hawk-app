@@ -7,6 +7,8 @@ import net.simonvt.schematic.annotation.PrimaryKey;
 
 /**
  * Created by sam_chordas on 10/5/15.
+ *
+ * Updated By: Dmitry Malkovich.
  */
 public class QuoteColumns {
   @DataType(DataType.Type.INTEGER) @PrimaryKey @AutoIncrement
