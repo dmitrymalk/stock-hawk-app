@@ -17,6 +17,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
+        android:contentDescription="@string/add_stock_quote"
         android:src="@drawable/ic_add_white_24dp"
         app:backgroundTint="@color/material_blue_500" />
 

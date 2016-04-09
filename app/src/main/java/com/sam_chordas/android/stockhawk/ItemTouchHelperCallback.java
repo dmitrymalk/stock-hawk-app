@@ -1,20 +1,32 @@
-package com.sam_chordas.android.stockhawk.touch;
+package com.sam_chordas.android.stockhawk;
 
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 /**
  * Created by sam_chordas on 10/6/15.
- * Credit to Paul Burke (ipaulpro)
- * This class enables swipe to delete in RecyclerView
- *
+ * Credit to Paul Burke (ipaulpro).
+ * <p/>
  * Updated By: Dmitry Malkovich.
+ * <p/>
+ * This class enables swipe to delete in RecyclerView.
  */
-public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
-    private final ItemTouchHelperAdapter mAdapter;
-//    public static final float ALPHA_FULL = 1.0f;
+public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
-    public SimpleItemTouchHelperCallback(ItemTouchHelperAdapter adapter) {
+    private final SwipeListener mAdapter;
+
+    public interface SwipeListener {
+
+        void onItemDismiss(int position);
+    }
+
+    public interface ItemTouchHelperViewHolder {
+        void onItemSelected();
+
+        void onItemClear();
+    }
+
+    public ItemTouchHelperCallback(SwipeListener adapter) {
         mAdapter = adapter;
     }
 
@@ -25,13 +37,12 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        final int dragFlags = 0;
-        final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
-        return makeMovementFlags(dragFlags, swipeFlags);
+        return makeMovementFlags(0, ItemTouchHelper.START | ItemTouchHelper.END);
     }
 
     @Override
-    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder sourceViewHolder, RecyclerView.ViewHolder targetViewHolder) {
+    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder sourceViewHolder,
+                          RecyclerView.ViewHolder targetViewHolder) {
         return true;
     }
 
@@ -39,7 +50,6 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int i) {
         mAdapter.onItemDismiss(viewHolder.getAdapterPosition());
     }
-
 
     @Override
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {

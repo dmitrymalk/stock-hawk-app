@@ -13,4 +13,6 @@
     <string name="title_for_empty_view">Whoops!</string>
     <string name="text_for_empty_view">No internet connection found. Check your connection and try again.</string>
     <string name="input_prefill">input_prefill</string>
+    <string name="stock_already_saved">This stock is already saved!</string>
+    <string name="add_stock_quote">Add a new stock quote</string>
 </resources>

@@ -5,4 +5,9 @@
     <dimen name="navigation_drawer_width">240dp</dimen>
     <dimen name="empty_state_padding">64dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="list_item_stock_horizontal_padding">16dp</dimen>
+    <dimen name="list_item_stock_height">72dp</dimen>
+    <dimen name="list_item_stock_price_horizontal_padding">10sp</dimen>
+    <dimen name="list_item_stock_change_horizontal_padding">3dp</dimen>
+    <dimen name="percent_change_pill_radius">4dp</dimen>
 </resources>

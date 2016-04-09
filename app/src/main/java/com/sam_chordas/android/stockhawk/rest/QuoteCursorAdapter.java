@@ -3,7 +3,6 @@ package com.sam_chordas.android.stockhawk.rest;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,25 +10,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.sam_chordas.android.stockhawk.ItemTouchHelperCallback;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.touch.ItemTouchHelperAdapter;
-import com.sam_chordas.android.stockhawk.touch.ItemTouchHelperViewHolder;
 
 /**
  * Created by sam_chordas on 10/6/15.
+ * <p/>
  * Credit to skyfishjy gist:
  * https://gist.github.com/skyfishjy/443b7448f59be978bc59
- * for the code structure
+ * for the code structure.
  * <p/>
  * Updated By: Dmitry Malkovich.
  */
 public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAdapter.ViewHolder>
-        implements ItemTouchHelperAdapter {
+        implements ItemTouchHelperCallback.SwipeListener {
 
     private static Context mContext;
-    private static Typeface robotoLight;
 
     public QuoteCursorAdapter(Context context, Cursor cursor) {
         super(cursor);
@@ -38,7 +36,6 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        robotoLight = Typeface.createFromAsset(mContext.getAssets(), "fonts/Roboto-Light.ttf");
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_stock, parent, false);
         return new ViewHolder(itemView);
@@ -83,7 +80,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder
-            implements ItemTouchHelperViewHolder, View.OnClickListener {
+            implements ItemTouchHelperCallback.ItemTouchHelperViewHolder, View.OnClickListener {
         public final TextView symbol;
         public final TextView bidPrice;
         public final TextView change;
@@ -91,7 +88,6 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
         public ViewHolder(View itemView) {
             super(itemView);
             symbol = (TextView) itemView.findViewById(R.id.stock_symbol);
-            symbol.setTypeface(robotoLight);
             bidPrice = (TextView) itemView.findViewById(R.id.bid_price);
             change = (TextView) itemView.findViewById(R.id.change);
         }

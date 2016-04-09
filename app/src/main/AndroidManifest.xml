@@ -31,7 +31,7 @@
         </activity>
 
         <service
-            android:name="com.sam_chordas.android.stockhawk.service.StockTaskService"
+            android:name=".StockTaskService"
             android:exported="true"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
             <intent-filter>
@@ -39,7 +39,7 @@
             </intent-filter>
         </service>
 
-        <service android:name="com.sam_chordas.android.stockhawk.service.StockIntentService" />
+        <service android:name=".StockIntentService" />
 
         <provider
             android:name="com.sam_chordas.android.stockhawk.data.generated.QuoteProvider"

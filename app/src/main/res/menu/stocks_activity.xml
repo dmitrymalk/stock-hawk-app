@@ -5,7 +5,6 @@
     <item
         android:id="@+id/action_change_units"
         android:icon="@drawable/ic_attach_money_white_24dp"
-        android:orderInCategory="99"
         android:title="@string/action_change_units"
         app:showAsAction="always" />
 </menu>
