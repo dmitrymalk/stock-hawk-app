@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.sam_chordas.android.stockhawk.ItemTouchHelperCallback;
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.StocksActivity;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 
@@ -28,10 +29,12 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
         implements ItemTouchHelperCallback.SwipeListener {
 
     private static Context mContext;
+    private int mChangeUnits;
 
-    public QuoteCursorAdapter(Context context, Cursor cursor) {
+    public QuoteCursorAdapter(Context context, Cursor cursor, int changeUnits) {
         super(cursor);
         mContext = context;
+        mChangeUnits = changeUnits;
     }
 
     @Override
@@ -43,9 +46,9 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final Cursor cursor) {
-        viewHolder.symbol.setText(cursor.getString(cursor.getColumnIndex("symbol")));
-        viewHolder.bidPrice.setText(cursor.getString(cursor.getColumnIndex("bid_price")));
-        if (cursor.getInt(cursor.getColumnIndex("is_up")) == 1) {
+        viewHolder.symbol.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.SYMBOL)));
+        viewHolder.bidPrice.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.BIDPRICE)));
+        if (cursor.getInt(cursor.getColumnIndex(QuoteColumns.ISUP)) == 1) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 viewHolder.change.setBackground(
                         mContext.getResources().getDrawable(R.drawable.percent_change_pill_green,
@@ -58,10 +61,10 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
                                 mContext.getTheme()));
             }
         }
-        if (Utils.showPercent) {
-            viewHolder.change.setText(cursor.getString(cursor.getColumnIndex("percent_change")));
+        if (mChangeUnits == StocksActivity.CHANGE_UNITS_PERCENTAGES) {
+            viewHolder.change.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE)));
         } else {
-            viewHolder.change.setText(cursor.getString(cursor.getColumnIndex("change")));
+            viewHolder.change.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.CHANGE)));
         }
     }
 
@@ -106,5 +109,9 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
         public void onClick(View v) {
 
         }
+    }
+
+    public void setChangeUnits(int changeUnits) {
+        this.mChangeUnits = changeUnits;
     }
 }

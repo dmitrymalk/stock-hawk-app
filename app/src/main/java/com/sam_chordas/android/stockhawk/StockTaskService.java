@@ -1,5 +1,6 @@
 package com.sam_chordas.android.stockhawk;
 
+import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,14 +15,19 @@ import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created by sam_chordas on 9/30/15.
@@ -32,7 +38,7 @@ import java.net.URLEncoder;
  */
 public class StockTaskService extends GcmTaskService {
 
-    private String LOG_TAG = StockTaskService.class.getSimpleName();
+    private static String LOG_TAG = StockTaskService.class.getSimpleName();
     private final static String BASE_URL = "https://query.yahooapis.com/v1/public/yql?q=";
     private final static String QUERY_PREFIX = "select * from yahoo.finance.quotes where symbol in (";
     private final static String QUERY_SUFFIX = "&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables."
@@ -50,11 +56,17 @@ public class StockTaskService extends GcmTaskService {
         mContext = context;
     }
 
+    @SuppressWarnings("unused")
     public StockTaskService() {
     }
 
     @Override
     public int onRunTask(TaskParams params) {
+
+        if (mContext == null) {
+            return GcmNetworkManager.RESULT_FAILURE;
+        }
+
         try {
             String url = buildUrl(params);
             saveData(fetchData(url));
@@ -129,6 +141,81 @@ public class StockTaskService extends GcmTaskService {
                     null, null);
         }
         resolver.applyBatch(QuoteProvider.AUTHORITY,
-                Utils.quoteJsonToContentVals(quoteJson));
+                quoteJsonToContentVals(quoteJson));
+    }
+
+    public static ArrayList<ContentProviderOperation> quoteJsonToContentVals(String JSON) {
+        ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
+        JSONObject jsonObject;
+        JSONArray resultsArray;
+        try {
+            jsonObject = new JSONObject(JSON);
+            if (jsonObject.length() != 0) {
+                jsonObject = jsonObject.getJSONObject("query");
+                int count = Integer.parseInt(jsonObject.getString("count"));
+                if (count == 1) {
+                    jsonObject = jsonObject.getJSONObject("results")
+                            .getJSONObject("quote");
+                    batchOperations.add(buildBatchOperation(jsonObject));
+                } else {
+                    resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
+
+                    if (resultsArray != null && resultsArray.length() != 0) {
+                        for (int i = 0; i < resultsArray.length(); i++) {
+                            jsonObject = resultsArray.getJSONObject(i);
+                            batchOperations.add(buildBatchOperation(jsonObject));
+                        }
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "String to JSON failed: " + e);
+        }
+        return batchOperations;
+    }
+
+    private static ContentProviderOperation buildBatchOperation(JSONObject jsonObject) {
+        ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
+                QuoteProvider.Quotes.CONTENT_URI);
+        try {
+            String change = jsonObject.getString("Change");
+            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
+            builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
+            builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
+                    jsonObject.getString("ChangeinPercent"), true));
+            builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
+            builder.withValue(QuoteColumns.ISCURRENT, 1);
+            if (change.charAt(0) == '-') {
+                builder.withValue(QuoteColumns.ISUP, 0);
+            } else {
+                builder.withValue(QuoteColumns.ISUP, 1);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return builder.build();
+    }
+
+    private static String truncateBidPrice(String bidPrice) {
+        bidPrice = String.format(Locale.US, "%.2f", Float.parseFloat(bidPrice));
+        return bidPrice;
+    }
+
+    private static String truncateChange(String change, boolean isPercentChange) {
+        String weight = change.substring(0, 1);
+        String ampersand = "";
+        if (isPercentChange) {
+            ampersand = change.substring(change.length() - 1, change.length());
+            change = change.substring(0, change.length() - 1);
+        }
+        change = change.substring(1, change.length());
+        double round = (double) Math.round(Double.parseDouble(change) * 100) / 100;
+        change = String.format(Locale.US, "%.2f", round);
+        StringBuilder changeBuffer = new StringBuilder(change);
+        changeBuffer.insert(0, weight);
+        changeBuffer.append(ampersand);
+        change = changeBuffer.toString();
+        return change;
     }
 }

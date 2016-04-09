@@ -27,7 +27,6 @@ import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
-import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
@@ -40,7 +39,11 @@ public class StocksActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>, RecyclerViewItemClickListener.OnItemClickListener {
 
     private static final int CURSOR_LOADER_ID = 0;
+    private final String EXTRA_CHANGE_UNITS = "EXTRA_CHANGE_UNITS";
+    public static final int CHANGE_UNITS_DOLLARS = 0;
+    public static final int CHANGE_UNITS_PERCENTAGES = 1;
 
+    private int mChangeUnits = CHANGE_UNITS_DOLLARS;
     private QuoteCursorAdapter mAdapter;
 
     @Bind(R.id.recycler_view)
@@ -67,12 +70,14 @@ public class StocksActivity extends AppCompatActivity implements
             } else {
                 networkToast();
             }
+        } else {
+            mChangeUnits = savedInstanceState.getInt(EXTRA_CHANGE_UNITS);
         }
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this, this));
 
-        mAdapter = new QuoteCursorAdapter(this, null);
+        mAdapter = new QuoteCursorAdapter(this, null, mChangeUnits);
         mRecyclerView.setAdapter(mAdapter);
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
@@ -111,16 +116,23 @@ public class StocksActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(EXTRA_CHANGE_UNITS, mChangeUnits);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         if (id == R.id.action_change_units) {
-            // this is for changing stock changes from percent value to dollar value
-            Utils.showPercent = !Utils.showPercent;
-            this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+            if (mChangeUnits == CHANGE_UNITS_DOLLARS) {
+                mChangeUnits = CHANGE_UNITS_PERCENTAGES;
+            } else {
+                mChangeUnits = CHANGE_UNITS_DOLLARS;
+            }
+            mAdapter.setChangeUnits(mChangeUnits);
+            mAdapter.notifyDataSetChanged();
         }
 
         return super.onOptionsItemSelected(item);
