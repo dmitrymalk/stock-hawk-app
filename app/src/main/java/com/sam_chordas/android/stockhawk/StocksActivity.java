@@ -165,7 +165,7 @@ public class StocksActivity extends AppCompatActivity implements
             new MaterialDialog.Builder(StocksActivity.this).title(R.string.symbol_search)
                     .content(R.string.content_test)
                     .inputType(InputType.TYPE_CLASS_TEXT)
-                    .input(R.string.input_hint, R.string.input_prefill,
+                    .input(R.string.input_hint, R.string.input_pre_fill,
                             new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {

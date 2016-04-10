@@ -56,6 +56,7 @@ public class QuoteProvider {
     }
 
     public static ContentProviderOperation buildBatchOperation(StockQuote quote) {
+
         ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
                 QuoteProvider.Quotes.CONTENT_URI);
         String change = quote.getChange();

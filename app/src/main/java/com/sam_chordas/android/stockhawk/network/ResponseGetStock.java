@@ -2,6 +2,9 @@ package com.sam_chordas.android.stockhawk.network;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Dmitry Malkovich on 4/10/16.
  * <p/>
@@ -11,29 +14,38 @@ import com.google.gson.annotations.SerializedName;
 public class ResponseGetStock {
 
     @SerializedName("query")
-    private Result result;
+    private Result mResult;
 
-    public Result getResult() {
+    public List<StockQuote> getStockQuotes() {
+        List<StockQuote> result = new ArrayList<>();
+        StockQuote stockQuote = mResult.getQuote().getStockQuote();
+        if (stockQuote.getBid() != null && stockQuote.getChangeInPercent() != null
+                && stockQuote.getChange() != null) {
+            result.add(stockQuote);
+        }
         return result;
     }
 
     public class Result {
 
+        @SerializedName("count")
+        private int mCount;
+
         @SerializedName("results")
-        private Quote quote;
+        private Quote mQuote;
 
         public Quote getQuote() {
-            return quote;
+            return mQuote;
         }
     }
 
     public class Quote {
 
         @SerializedName("quote")
-        private StockQuote stockQuote;
+        private StockQuote mStockQuote;
 
         public StockQuote getStockQuote() {
-            return stockQuote;
+            return mStockQuote;
         }
     }
 }
