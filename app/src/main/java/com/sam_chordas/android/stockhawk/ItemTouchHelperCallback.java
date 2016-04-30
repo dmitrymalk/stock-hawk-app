@@ -43,6 +43,8 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder sourceViewHolder,
                           RecyclerView.ViewHolder targetViewHolder) {
+        ItemTouchHelperViewHolder itemViewHolder = (ItemTouchHelperViewHolder) sourceViewHolder;
+        itemViewHolder.onItemClear();
         return true;
     }
 
@@ -64,7 +66,6 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
-
         ItemTouchHelperViewHolder itemViewHolder = (ItemTouchHelperViewHolder) viewHolder;
         itemViewHolder.onItemClear();
     }
