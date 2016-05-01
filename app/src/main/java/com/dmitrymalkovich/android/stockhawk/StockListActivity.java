@@ -8,19 +8,19 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
@@ -36,7 +36,15 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class StocksActivity extends AppCompatActivity implements
+/**
+ * An activity representing a list of Stocks. This activity
+ * has different presentations for handset and tablet-size devices. On
+ * handsets, the activity presents a list of items, which when touched,
+ * lead to a {@link StockDetailActivity} representing
+ * item details. On tablets, the activity presents the list of items and
+ * item details side-by-side using two vertical panes.
+ */
+public class StockListActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>, RecyclerViewItemClickListener.OnItemClickListener {
 
     public static final int CHANGE_UNITS_DOLLARS = 0;
@@ -46,18 +54,31 @@ public class StocksActivity extends AppCompatActivity implements
 
     private int mChangeUnits = CHANGE_UNITS_DOLLARS;
     private QuoteCursorAdapter mAdapter;
+    /**
+     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
+     * device.
+     */
+    private boolean mTwoPane;
 
-    @Bind(R.id.recycler_view)
+    @Bind(R.id.stock_list)
     RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_stocks);
+        setContentView(R.layout.activity_stock_list);
         ButterKnife.bind(this);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
+        }
+
+        if (findViewById(R.id.stock_detail_container) != null) {
+            // The detail container view will be present only in the
+            // large-screen layouts (res/values-w900dp).
+            // If this view is present, then the
+            // activity should be in two-pane mode.
+            mTwoPane = true;
         }
 
         if (savedInstanceState == null) {
@@ -102,7 +123,6 @@ public class StocksActivity extends AppCompatActivity implements
             GcmNetworkManager.getInstance(this).schedule(periodicTask);
         }
     }
-
 
     @Override
     public void onResume() {
@@ -160,10 +180,11 @@ public class StocksActivity extends AppCompatActivity implements
         mAdapter.swapCursor(null);
     }
 
+    @SuppressWarnings("unused")
     @OnClick(R.id.fab)
     public void showDialogForAddingStock() {
         if (isNetworkAvailable()) {
-            new MaterialDialog.Builder(StocksActivity.this).title(R.string.symbol_search)
+            new MaterialDialog.Builder(this).title(R.string.symbol_search)
                     .content(R.string.content_test)
                     .inputType(InputType.TYPE_CLASS_TEXT)
                     .input(R.string.input_hint, R.string.input_pre_fill,
@@ -181,7 +202,20 @@ public class StocksActivity extends AppCompatActivity implements
 
     @Override
     public void onItemClick(View v, int position) {
-
+        if (mTwoPane) {
+            Bundle arguments = new Bundle();
+            arguments.putLong(StockDetailFragment.ARG_ITEM_ID, mAdapter.getItemId(position));
+            StockDetailFragment fragment = new StockDetailFragment();
+            fragment.setArguments(arguments);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.stock_detail_container, fragment)
+                    .commit();
+        } else {
+            Context context = v.getContext();
+            Intent intent = new Intent(context, StockDetailActivity.class);
+            intent.putExtra(StockDetailFragment.ARG_ITEM_ID, mAdapter.getItemId(position));
+            context.startActivity(intent);
+        }
     }
 
     private void addStockQuote(String stockQuote) {
@@ -194,7 +228,7 @@ public class StocksActivity extends AppCompatActivity implements
                 null);
 
         if (cursor != null && cursor.getCount() != 0) {
-            Toast toast = Toast.makeText(StocksActivity.this, R.string.stock_already_saved,
+            Toast toast = Toast.makeText(this, R.string.stock_already_saved,
                     Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
             toast.show();

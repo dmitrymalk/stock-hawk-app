@@ -2,7 +2,6 @@ package com.dmitrymalkovich.android.stockhawk.rest;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,9 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.dmitrymalkovich.android.stockhawk.StockListActivity;
 import com.dmitrymalkovich.android.stockhawk.widget.helper.ItemTouchHelperCallback;
 import com.dmitrymalkovich.android.stockhawk.R;
-import com.dmitrymalkovich.android.stockhawk.StocksActivity;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteProvider;
 
@@ -40,7 +39,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_stock, parent, false);
+                .inflate(R.layout.stock_list_content, parent, false);
         return new ViewHolder(itemView);
     }
 
@@ -61,7 +60,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
                                 mContext.getTheme()));
             }
         }
-        if (mChangeUnits == StocksActivity.CHANGE_UNITS_PERCENTAGES) {
+        if (mChangeUnits == StockListActivity.CHANGE_UNITS_PERCENTAGES) {
             viewHolder.change.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE)));
         } else {
             viewHolder.change.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.CHANGE)));

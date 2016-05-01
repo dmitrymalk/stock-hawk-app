@@ -10,4 +10,5 @@
     <string name="input_pre_fill" />
     <string name="stock_already_saved">This stock is already saved!</string>
     <string name="add_stock_quote">Add a new stock quote</string>
+    <string name="title_stock_detail">Stock Detail</string>
 </resources>
