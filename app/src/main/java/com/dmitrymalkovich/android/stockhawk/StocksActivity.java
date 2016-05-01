@@ -39,10 +39,10 @@ import butterknife.OnClick;
 public class StocksActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>, RecyclerViewItemClickListener.OnItemClickListener {
 
-    private static final int CURSOR_LOADER_ID = 0;
-    private final String EXTRA_CHANGE_UNITS = "EXTRA_CHANGE_UNITS";
     public static final int CHANGE_UNITS_DOLLARS = 0;
     public static final int CHANGE_UNITS_PERCENTAGES = 1;
+    private static final int CURSOR_LOADER_ID = 0;
+    private final String EXTRA_CHANGE_UNITS = "EXTRA_CHANGE_UNITS";
 
     private int mChangeUnits = CHANGE_UNITS_DOLLARS;
     private QuoteCursorAdapter mAdapter;

@@ -22,7 +22,6 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     public interface ItemTouchHelperViewHolder {
         void onItemSelected();
-
         void onItemClear();
     }
 
@@ -59,7 +58,6 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
             ItemTouchHelperViewHolder itemViewHolder = (ItemTouchHelperViewHolder) viewHolder;
             itemViewHolder.onItemSelected();
         }
-
         super.onSelectedChanged(viewHolder, actionState);
     }
 
