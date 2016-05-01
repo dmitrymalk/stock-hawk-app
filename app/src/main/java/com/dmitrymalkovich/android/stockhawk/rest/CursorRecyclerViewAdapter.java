@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.rest;
+package com.dmitrymalkovich.android.stockhawk.rest;
 
 import android.database.Cursor;
 import android.database.DataSetObserver;

@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk;
+package com.dmitrymalkovich.android.stockhawk;
 
 import android.app.LoaderManager;
 import android.content.Context;
@@ -23,10 +23,10 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.sam_chordas.android.stockhawk.data.QuoteColumns;
-import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
-import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
+import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
+import com.dmitrymalkovich.android.stockhawk.data.QuoteProvider;
+import com.dmitrymalkovich.android.stockhawk.rest.QuoteCursorAdapter;
+import com.dmitrymalkovich.android.stockhawk.rest.RecyclerViewItemClickListener;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;

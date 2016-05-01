@@ -6,7 +6,7 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "com.example.sam_chordas.stockhawk"
+        applicationId "com.dmitrymalkovich.android.stockhawk"
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 1

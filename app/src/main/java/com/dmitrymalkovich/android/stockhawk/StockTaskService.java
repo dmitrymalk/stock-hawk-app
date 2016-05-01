@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk;
+package com.dmitrymalkovich.android.stockhawk;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
@@ -13,12 +13,12 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
-import com.sam_chordas.android.stockhawk.data.QuoteColumns;
-import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.network.ResponseGetStock;
-import com.sam_chordas.android.stockhawk.network.StockQuote;
-import com.sam_chordas.android.stockhawk.network.StocksDatabaseService;
-import com.sam_chordas.android.stockhawk.network.ResponseGetStocks;
+import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
+import com.dmitrymalkovich.android.stockhawk.data.QuoteProvider;
+import com.dmitrymalkovich.android.stockhawk.network.ResponseGetStock;
+import com.dmitrymalkovich.android.stockhawk.network.StockQuote;
+import com.dmitrymalkovich.android.stockhawk.network.StocksDatabaseService;
+import com.dmitrymalkovich.android.stockhawk.network.ResponseGetStocks;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

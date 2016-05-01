@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.sam_chordas.android.stockhawk">
+    package="com.dmitrymalkovich.android.stockhawk">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
@@ -42,8 +42,8 @@
         <service android:name=".StockIntentService" />
 
         <provider
-            android:name="com.sam_chordas.android.stockhawk.data.generated.QuoteProvider"
-            android:authorities="com.sam_chordas.android.stockhawk.data.QuoteProvider"
+            android:name="com.dmitrymalkovich.android.stockhawk.data.generated.QuoteProvider"
+            android:authorities="com.dmitrymalkovich.android.stockhawk.data.QuoteProvider"
             android:exported="false" />
     </application>
 

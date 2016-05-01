@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.network;
+package com.dmitrymalkovich.android.stockhawk.network;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

@@ -1,9 +1,9 @@
-package com.sam_chordas.android.stockhawk.data;
+package com.dmitrymalkovich.android.stockhawk.data;
 
 import android.content.ContentProviderOperation;
 import android.net.Uri;
 
-import com.sam_chordas.android.stockhawk.network.StockQuote;
+import com.dmitrymalkovich.android.stockhawk.network.StockQuote;
 
 import net.simonvt.schematic.annotation.ContentProvider;
 import net.simonvt.schematic.annotation.ContentUri;
@@ -19,7 +19,7 @@ import java.util.Locale;
  */
 @ContentProvider(authority = QuoteProvider.AUTHORITY, database = QuoteDatabase.class)
 public class QuoteProvider {
-    public static final String AUTHORITY = "com.sam_chordas.android.stockhawk.data.QuoteProvider";
+    public static final String AUTHORITY = "com.dmitrymalkovich.android.stockhawk.data.QuoteProvider";
 
     static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
