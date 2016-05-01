@@ -1,4 +1,4 @@
-package com.dmitrymalkovich.android.stockhawk;
+package com.dmitrymalkovich.android.stockhawk.widget.helper;
 
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;

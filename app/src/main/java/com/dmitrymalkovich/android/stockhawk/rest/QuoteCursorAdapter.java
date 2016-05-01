@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.dmitrymalkovich.android.stockhawk.ItemTouchHelperCallback;
+import com.dmitrymalkovich.android.stockhawk.widget.helper.ItemTouchHelperCallback;
 import com.dmitrymalkovich.android.stockhawk.R;
 import com.dmitrymalkovich.android.stockhawk.StocksActivity;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;

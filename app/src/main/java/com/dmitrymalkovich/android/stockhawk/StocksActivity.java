@@ -27,6 +27,7 @@ import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteProvider;
 import com.dmitrymalkovich.android.stockhawk.rest.QuoteCursorAdapter;
 import com.dmitrymalkovich.android.stockhawk.rest.RecyclerViewItemClickListener;
+import com.dmitrymalkovich.android.stockhawk.widget.helper.ItemTouchHelperCallback;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
