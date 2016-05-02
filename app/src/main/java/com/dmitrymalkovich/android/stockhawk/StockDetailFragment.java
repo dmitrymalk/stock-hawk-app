@@ -18,12 +18,14 @@ package com.dmitrymalkovich.android.stockhawk;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
@@ -51,6 +53,8 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
     @Bind(R.id.stock_detail)
     TextView mSymbolView;
+    @Bind(android.R.id.tabhost)
+    TabHost mTabHost;
 
     public StockDetailFragment() {
     }
@@ -71,6 +75,7 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.stock_detail, container, false);
         ButterKnife.bind(this, rootView);
+        setupTabs();
         return rootView;
     }
 
@@ -95,4 +100,30 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
+
+    private void setupTabs() {
+        mTabHost.setup();
+
+        TabHost.TabSpec tabSpec;
+        tabSpec = mTabHost.newTabSpec("tag1");
+        tabSpec.setIndicator(getString(R.string.stock_detail_tab1));
+        tabSpec.setContent(android.R.id.tabcontent);
+        mTabHost.addTab(tabSpec);
+
+        tabSpec = mTabHost.newTabSpec("tag2");
+        tabSpec.setIndicator(getString(R.string.stock_detail_tab2));
+        tabSpec.setContent(android.R.id.tabcontent);
+        mTabHost.addTab(tabSpec);
+
+        tabSpec = mTabHost.newTabSpec("tag3");
+        tabSpec.setIndicator(getString(R.string.stock_detail_tab3));
+        tabSpec.setContent(android.R.id.tabcontent);
+        mTabHost.addTab(tabSpec);
+
+        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            public void onTabChanged(String tabId) {
+            }
+        });
+    }
+
 }

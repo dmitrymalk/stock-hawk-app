@@ -22,5 +22,9 @@
     <string name="input_pre_fill" />
     <string name="stock_already_saved">This stock is already saved!</string>
     <string name="add_stock_quote">Add a new stock quote</string>
-    <string name="title_stock_detail">Stock Detail</string>
+    <string name="title_stock_detail">Stock</string>
+    <string name="stock_detail_tab1">1DAY</string>
+    <string name="stock_detail_tab2">1WEEK</string>
+    <string name="stock_detail_tab3">1MONTH</string>
+    <string name="stock_detail_tab_header">NASDAQ:</string>
 </resources>
