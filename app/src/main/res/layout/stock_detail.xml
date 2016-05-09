@@ -21,28 +21,84 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/stock_detail"
-            style="?android:attr/textAppearanceLarge"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textIsSelectable="true" />
+            android:background="@color/material_blue_500"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/stock_symbol"
+                style="?android:attr/textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:textIsSelectable="true"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="8dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:weightSum="4">
+
+                <TextView
+                    android:id="@+id/stock_ebitda"
+                    style="?android:attr/textAppearanceLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:textIsSelectable="true"
+                    android:textSize="42sp" />
+
+                <TextView
+                    android:id="@+id/change"
+                    style="?android:attr/textAppearanceLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:gravity="end"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <TabHost
             android:id="@android:id/tabhost"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TabWidget
-                android:id="@android:id/tabs"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:id="@android:id/tabcontent"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                <TabWidget
+                    android:id="@android:id/tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/material_blue_500" />
 
+                <FrameLayout
+                    android:id="@android:id/tabcontent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <lecho.lib.hellocharts.view.LineChartView
+                        android:id="@+id/chart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="16dp"
+                        android:visibility="invisible" />
+
+                </FrameLayout>
+            </LinearLayout>
         </TabHost>
 
     </LinearLayout>

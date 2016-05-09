@@ -37,4 +37,9 @@ public interface StocksDatabaseService {
             "format=json&diagnostics=true&" +
             "env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=")
     Call<ResponseGetStock> getStock(@Query("q") String query);
+
+    @GET("/v1/public/yql?" +
+            "format=json&diagnostics=true&" +
+            "env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=")
+    Call<ResponseGetHistoricalData> getStockHistoricalData(@Query("q") String query);
 }

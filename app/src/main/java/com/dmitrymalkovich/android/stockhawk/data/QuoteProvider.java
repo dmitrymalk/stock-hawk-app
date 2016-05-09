@@ -86,6 +86,7 @@ public class QuoteProvider {
         } else {
             builder.withValue(QuoteColumns.ISUP, 1);
         }
+        builder.withValue(QuoteColumns.NAME, quote.getName());
         return builder.build();
     }
 

@@ -31,6 +31,9 @@ public class StockQuote {
     @SerializedName("symbol")
     private String symbol;
 
+    @SerializedName("Name")
+    private String name;
+
     @SerializedName("Bid")
     private String bid;
 
@@ -51,5 +54,9 @@ public class StockQuote {
 
     public String getChangeInPercent() {
         return changeInPercent;
+    }
+
+    public String getName() {
+        return name;
     }
 }

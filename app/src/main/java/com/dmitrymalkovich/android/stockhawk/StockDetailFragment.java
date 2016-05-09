@@ -16,12 +16,17 @@
 package com.dmitrymalkovich.android.stockhawk;
 
 import android.database.Cursor;
+import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +35,24 @@ import android.widget.TextView;
 
 import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteProvider;
+import com.dmitrymalkovich.android.stockhawk.network.FetchStockHistoricData;
+import com.dmitrymalkovich.android.stockhawk.network.ResponseGetHistoricalData;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import lecho.lib.hellocharts.model.Axis;
+import lecho.lib.hellocharts.model.AxisValue;
+import lecho.lib.hellocharts.model.Line;
+import lecho.lib.hellocharts.model.LineChartData;
+import lecho.lib.hellocharts.model.PointValue;
+import lecho.lib.hellocharts.view.LineChartView;
 
 /**
  * A fragment representing a single Stock detail screen.
@@ -40,8 +60,11 @@ import butterknife.ButterKnife;
  * in two-pane mode (on tablets) or a {@link StockDetailActivity}
  * on handsets.
  */
-public class StockDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class StockDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>,
+        TabHost.OnTabChangeListener, FetchStockHistoricData.Listener {
 
+    @SuppressWarnings("unused")
+    public static String LOG_TAG = StockDetailFragment.class.getSimpleName();
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -50,11 +73,20 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     private static final int CURSOR_LOADER_ID = 1;
 
     private long mId = -1;
+    private String mSymbol;
 
-    @Bind(R.id.stock_detail)
+    @Bind(R.id.stock_symbol)
     TextView mSymbolView;
+    @Bind(R.id.stock_ebitda)
+    TextView mEbitdaView;
     @Bind(android.R.id.tabhost)
     TabHost mTabHost;
+    @Bind(R.id.chart)
+    LineChartView mChart;
+    @Bind(R.id.change)
+    TextView mChange;
+    @Bind(android.R.id.tabcontent)
+    View mTabContent;
 
     public StockDetailFragment() {
     }
@@ -67,7 +99,9 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
             mId = getArguments().getLong(ARG_ITEM_ID);
         }
 
-        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
+        if (getActionBar() != null) {
+            getActionBar().setElevation(0);
+        }
     }
 
     @Override
@@ -80,10 +114,17 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     }
 
     @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
+    }
+
+    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
                 new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
-                        QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
+                        QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP,
+                        QuoteColumns.NAME},
                 QuoteColumns._ID + " = " + mId,
                 null, null);
     }
@@ -91,8 +132,23 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
-            String symbol = data.getString(data.getColumnIndex(QuoteColumns.SYMBOL));
-            mSymbolView.setText(symbol);
+            mSymbol = data.getString(data.getColumnIndex(QuoteColumns.SYMBOL));
+            mSymbolView.setText(getString(R.string.stock_detail_tab_header, mSymbol));
+
+            String ebitda = data.getString(data.getColumnIndex(QuoteColumns.BIDPRICE));
+            mEbitdaView.setText(ebitda);
+
+            String name = data.getString(data.getColumnIndex(QuoteColumns.NAME));
+            if (getActionBar() != null) {
+                getActionBar().setTitle(name);
+            }
+
+            String change = data.getString(data.getColumnIndex(QuoteColumns.CHANGE));
+            String percentChange = data.getString(data.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
+            String mixedChange = change + " (" + percentChange + ")";
+            mChange.setText(mixedChange);
+
+            onTabChanged(getString(R.string.stock_detail_tab1));
         }
     }
 
@@ -101,29 +157,98 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
     }
 
+    @Override
+    public void onTabChanged(String tabId) {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date currentDate = new Date();
+
+        Calendar calEnd = Calendar.getInstance();
+        calEnd.setTime(currentDate);
+        calEnd.add(Calendar.DATE, 0);
+
+        Calendar calStart = Calendar.getInstance();
+        calStart.setTime(currentDate);
+        calStart.add(Calendar.DATE, -30);
+
+        new FetchStockHistoricData(mSymbol,
+                dateFormat.format(calStart.getTime()),
+                dateFormat.format(calEnd.getTime()),
+                this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public void onFetchedStockHistoricData(List<ResponseGetHistoricalData.Quote> quotes) {
+
+        List<AxisValue> axisValuesX = new ArrayList<>();
+        List<PointValue> pointValues = new ArrayList<>();
+
+        for (int i = 0; i < quotes.size(); i++) {
+            ResponseGetHistoricalData.Quote quote = quotes.get(i);
+            PointValue pv = new PointValue(i, Float.valueOf(quote.getOpen()));
+            pv.setLabel(quote.getDate());
+            pointValues.add(pv);
+
+            if (i != 0 && i % 2 == 0) {
+                AxisValue axisValueX = new AxisValue(i);
+                axisValueX.setLabel(quote.getDate());
+                axisValuesX.add(axisValueX);
+            }
+        }
+
+        Line line = new Line(pointValues).setColor(Color.WHITE).setCubic(false);
+        List<Line> lines = new ArrayList<>();
+        lines.add(line);
+
+        LineChartData data = new LineChartData();
+        data.setLines(lines);
+
+        Axis axisX = new Axis(axisValuesX);
+        axisX.setHasLines(true);
+        axisX.setMaxLabelChars(4);
+        data.setAxisXBottom(axisX);
+
+        Axis axisY = new Axis();
+        axisY.setAutoGenerated(true);
+        axisY.setHasLines(true);
+        axisY.setMaxLabelChars(4);
+        data.setAxisYLeft(axisY);
+
+        mChart.setInteractive(false);
+        mChart.setLineChartData(data);
+        mChart.setVisibility(View.VISIBLE);
+        mTabContent.setVisibility(View.VISIBLE);
+    }
+
+    @Nullable
+    private ActionBar getActionBar() {
+        if (getActivity() instanceof AppCompatActivity) {
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            return activity.getSupportActionBar();
+        }
+        return null;
+    }
+
     private void setupTabs() {
         mTabHost.setup();
 
         TabHost.TabSpec tabSpec;
-        tabSpec = mTabHost.newTabSpec("tag1");
+        tabSpec = mTabHost.newTabSpec(getString(R.string.stock_detail_tab1));
         tabSpec.setIndicator(getString(R.string.stock_detail_tab1));
         tabSpec.setContent(android.R.id.tabcontent);
         mTabHost.addTab(tabSpec);
 
-        tabSpec = mTabHost.newTabSpec("tag2");
+        tabSpec = mTabHost.newTabSpec(getString(R.string.stock_detail_tab2));
         tabSpec.setIndicator(getString(R.string.stock_detail_tab2));
         tabSpec.setContent(android.R.id.tabcontent);
         mTabHost.addTab(tabSpec);
 
-        tabSpec = mTabHost.newTabSpec("tag3");
+        tabSpec = mTabHost.newTabSpec(getString(R.string.stock_detail_tab3));
         tabSpec.setIndicator(getString(R.string.stock_detail_tab3));
         tabSpec.setContent(android.R.id.tabcontent);
+
         mTabHost.addTab(tabSpec);
-
-        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
-            public void onTabChanged(String tabId) {
-            }
-        });
+        mTabHost.setOnTabChangedListener(this);
+        mTabHost.setCurrentTab(0);
     }
-
 }

@@ -28,7 +28,7 @@ public class QuoteDatabase {
     private QuoteDatabase() {
     }
 
-    public static final int VERSION = 7;
+    public static final int VERSION = 8;
 
     @Table(QuoteColumns.class)
     public static final String QUOTES = "quotes";
