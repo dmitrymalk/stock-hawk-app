@@ -33,10 +33,12 @@ public class ResponseGetStock {
 
     public List<StockQuote> getStockQuotes() {
         List<StockQuote> result = new ArrayList<>();
-        StockQuote stockQuote = mResult.getQuote().getStockQuote();
-        if (stockQuote.getBid() != null && stockQuote.getChangeInPercent() != null
-                && stockQuote.getChange() != null) {
-            result.add(stockQuote);
+        if (mResult != null && mResult.getQuote() != null) {
+            StockQuote stockQuote = mResult.getQuote().getStockQuote();
+            if (stockQuote.getBid() != null && stockQuote.getChangeInPercent() != null
+                    && stockQuote.getChange() != null) {
+                result.add(stockQuote);
+            }
         }
         return result;
     }

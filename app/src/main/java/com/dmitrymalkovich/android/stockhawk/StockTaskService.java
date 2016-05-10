@@ -166,7 +166,10 @@ public class StockTaskService extends GcmTaskService {
         for (StockQuote quote : quotes) {
 
             batchOperations.add(QuoteProvider.buildBatchOperation(quote));
+        }
+        resolver.applyBatch(QuoteProvider.AUTHORITY, batchOperations);
 
+        for (StockQuote quote : quotes) {
             // Load historical data for the quote
             try {
                 loadHistoricalData(quote);
@@ -174,8 +177,6 @@ public class StockTaskService extends GcmTaskService {
                 Log.e(LOG_TAG, e.getMessage(), e);
             }
         }
-
-        resolver.applyBatch(QuoteProvider.AUTHORITY, batchOperations);
     }
 
     private void loadHistoricalData(StockQuote quote) throws IOException, RemoteException,

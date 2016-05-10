@@ -25,6 +25,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,6 +36,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
@@ -66,17 +69,21 @@ public class StockListActivity extends AppCompatActivity implements
     public static final int CHANGE_UNITS_PERCENTAGES = 1;
     private static final int CURSOR_LOADER_ID = 0;
     private final String EXTRA_CHANGE_UNITS = "EXTRA_CHANGE_UNITS";
+    private final String EXTRA_ADD_DIALOG_OPENED = "EXTRA_ADD_DIALOG_OPENED";
 
     private int mChangeUnits = CHANGE_UNITS_DOLLARS;
     private QuoteCursorAdapter mAdapter;
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
     private boolean mTwoPane;
+    private MaterialDialog mDialog;
 
     @Bind(R.id.stock_list)
     RecyclerView mRecyclerView;
+    @Bind(R.id.empty_state_container)
+    View mEmptyStateView;
+    @Bind(R.id.progress)
+    ProgressBar mProgressBar;
+    @Bind(R.id.coordinator_layout)
+    CoordinatorLayout mCoordinatorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,10 +96,6 @@ public class StockListActivity extends AppCompatActivity implements
         }
 
         if (findViewById(R.id.stock_detail_container) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
             mTwoPane = true;
         }
 
@@ -105,10 +108,14 @@ public class StockListActivity extends AppCompatActivity implements
             if (isNetworkAvailable()) {
                 startService(stackServiceIntent);
             } else {
-                networkToast();
+                Snackbar.make(mCoordinatorLayout, getString(R.string.network_snackbar),
+                        Snackbar.LENGTH_LONG).show();
             }
         } else {
             mChangeUnits = savedInstanceState.getInt(EXTRA_CHANGE_UNITS);
+            if (savedInstanceState.getBoolean(EXTRA_ADD_DIALOG_OPENED, false)) {
+                showDialogForAddingStock();
+            }
         }
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -116,27 +123,27 @@ public class StockListActivity extends AppCompatActivity implements
 
         mAdapter = new QuoteCursorAdapter(this, null, mChangeUnits);
         mRecyclerView.setAdapter(mAdapter);
+
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
         ItemTouchHelper.Callback callback = new ItemTouchHelperCallback(mAdapter);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(mRecyclerView);
 
-        if (isNetworkAvailable()) {
-            // Create a periodic task to pull stocks once every hour after the app has been opened.
-            // This is so Widget data stays up to date.
-            PeriodicTask periodicTask = new PeriodicTask.Builder()
-                    .setService(StockTaskService.class)
-                    .setPeriod(/* 1h */ 60 * 60)
-                    .setFlex(/* 10s */ 10)
-                    .setTag(StockTaskService.TAG_PERIODIC)
-                    .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-                    .setRequiresCharging(false)
-                    .build();
-            // Schedule task with tag "periodic." This ensure that only the stocks present in the DB
-            // are updated.
-            GcmNetworkManager.getInstance(this).schedule(periodicTask);
-        }
+        // Create a periodic task to pull stocks once every hour after the app has been opened.
+        // This is so Widget data stays up to date.
+        PeriodicTask periodicTask = new PeriodicTask.Builder()
+                .setService(StockTaskService.class)
+                .setPeriod(/* 1h */ 60 * 60)
+                .setFlex(/* 10s */ 10)
+                .setTag(StockTaskService.TAG_PERIODIC)
+                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
+                .setRequiresCharging(false)
+                .build();
+        // Schedule task with tag "periodic." This ensure that only the stocks present in the DB
+        // are updated.
+        GcmNetworkManager.getInstance(this).schedule(periodicTask);
+
     }
 
     @Override
@@ -155,13 +162,23 @@ public class StockListActivity extends AppCompatActivity implements
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(EXTRA_CHANGE_UNITS, mChangeUnits);
+        if (mDialog != null) {
+            outState.putBoolean(EXTRA_ADD_DIALOG_OPENED, mDialog.isShowing());
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mDialog != null) {
+            mDialog.dismiss();
+            mDialog = null;
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_change_units) {
+        if (item.getItemId() == R.id.action_change_units) {
             if (mChangeUnits == CHANGE_UNITS_DOLLARS) {
                 mChangeUnits = CHANGE_UNITS_PERCENTAGES;
             } else {
@@ -170,13 +187,13 @@ public class StockListActivity extends AppCompatActivity implements
             mAdapter.setChangeUnits(mChangeUnits);
             mAdapter.notifyDataSetChanged();
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // This narrows the return to only the stocks that are most current.
+        mEmptyStateView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.VISIBLE);
         return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
                 new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
                         QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
@@ -187,7 +204,13 @@ public class StockListActivity extends AppCompatActivity implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mProgressBar.setVisibility(View.GONE);
         mAdapter.swapCursor(data);
+        if (mAdapter.getItemCount() == 0 && !isNetworkAvailable()) {
+            mEmptyStateView.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyStateView.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -199,19 +222,22 @@ public class StockListActivity extends AppCompatActivity implements
     @OnClick(R.id.fab)
     public void showDialogForAddingStock() {
         if (isNetworkAvailable()) {
-            new MaterialDialog.Builder(this).title(R.string.symbol_search)
-                    .content(R.string.content_test)
+            mDialog = new MaterialDialog.Builder(this).title(R.string.symbol_search)
                     .inputType(InputType.TYPE_CLASS_TEXT)
+                    .autoDismiss(true)
+                    .negativeText(R.string.disagree)
                     .input(R.string.input_hint, R.string.input_pre_fill,
                             new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     addStockQuote(input.toString());
                                 }
-                            })
-                    .show();
+                            }).build();
+            mDialog.show();
+
         } else {
-            networkToast();
+            Snackbar.make(mCoordinatorLayout, getString(R.string.network_snackbar),
+                    Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -266,10 +292,5 @@ public class StockListActivity extends AppCompatActivity implements
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
-    }
-
-    private void networkToast() {
-        Toast.makeText(this, getString(R.string.network_toast),
-                Toast.LENGTH_SHORT).show();
     }
 }

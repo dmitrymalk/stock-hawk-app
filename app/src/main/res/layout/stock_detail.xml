@@ -32,19 +32,19 @@
                 style="?android:attr/textAppearanceMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingBottom="8dp"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
+                android:paddingBottom="@dimen/detail_change_container_vertical_padding"
+                android:paddingLeft="@dimen/detail_change_container_horizontal_padding"
+                android:paddingRight="@dimen/detail_change_container_horizontal_padding"
                 android:textIsSelectable="true"
-                android:textSize="18sp" />
+                android:textSize="@dimen/detail_stock_symbol_text_size" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingBottom="8dp"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
+                android:paddingBottom="@dimen/detail_change_container_vertical_padding"
+                android:paddingLeft="@dimen/detail_change_container_horizontal_padding"
+                android:paddingRight="@dimen/detail_change_container_horizontal_padding"
                 android:weightSum="4">
 
                 <TextView
@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
                     android:textIsSelectable="true"
-                    android:textSize="42sp" />
+                    android:textSize="@dimen/stock_ebitda_text_size" />
 
                 <TextView
                     android:id="@+id/change"
@@ -63,7 +63,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
                     android:gravity="end"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/detail_change_text_size" />
 
             </LinearLayout>
 
@@ -94,11 +94,13 @@
                         android:id="@+id/chart"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="16dp"
+                        android:padding="@dimen/line_chart_padding"
                         android:visibility="invisible" />
 
                 </FrameLayout>
+
             </LinearLayout>
+
         </TabHost>
 
     </LinearLayout>

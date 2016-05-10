@@ -142,7 +142,7 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
             mEbitdaView.setText(ebitda);
 
             String name = data.getString(data.getColumnIndex(QuoteColumns.NAME));
-            if (getActionBar() != null) {
+            if (getActionBar() != null && getActivity() instanceof StockDetailActivity) {
                 getActionBar().setTitle(name);
             }
 

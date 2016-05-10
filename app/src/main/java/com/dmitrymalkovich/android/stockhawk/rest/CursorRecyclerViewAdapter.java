@@ -50,7 +50,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
 
     @Override
     public int getItemCount() {
-        if (mDataIsValid && mCursor != null) {
+        if (mCursor != null) {
             return mCursor.getCount();
         }
         return 0;

@@ -26,37 +26,37 @@ import com.google.gson.annotations.SerializedName;
 public class StockQuote {
 
     @SerializedName("Change")
-    private String change;
+    private String mChange;
 
     @SerializedName("symbol")
-    private String symbol;
+    private String mSymbol;
 
     @SerializedName("Name")
-    private String name;
+    private String mName;
 
     @SerializedName("Bid")
-    private String bid;
+    private String mBid;
 
     @SerializedName("ChangeinPercent")
-    private String changeInPercent;
+    private String mChangeInPercent;
 
     public String getChange() {
-        return change;
+        return mChange;
     }
 
     public String getBid() {
-        return bid;
+        return mBid;
     }
 
     public String getSymbol() {
-        return symbol;
+        return mSymbol;
     }
 
     public String getChangeInPercent() {
-        return changeInPercent;
+        return mChangeInPercent;
     }
 
     public String getName() {
-        return name;
+        return mName;
     }
 }
