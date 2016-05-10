@@ -127,14 +127,6 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-        String sortOrder = "ROWID LIMIT 5";
-        if (mSelectedTab.equals(getString(R.string.stock_detail_tab2))) {
-            sortOrder = "ROWID LIMIT 14";
-        } else if (mSelectedTab.equals(getString(R.string.stock_detail_tab3))) {
-            sortOrder = null;
-        }
-
         if (id == CURSOR_LOADER_ID) {
             return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
                     new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,

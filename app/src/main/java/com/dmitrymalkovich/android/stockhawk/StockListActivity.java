@@ -32,13 +32,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
-
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
@@ -211,6 +208,16 @@ public class StockListActivity extends AppCompatActivity implements
         } else {
             mEmptyStateView.setVisibility(View.GONE);
         }
+
+        if (!isNetworkAvailable()) {
+            Snackbar.make(mCoordinatorLayout, getString(R.string.offline),
+                    Snackbar.LENGTH_INDEFINITE).setAction(R.string.try_again, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, StockListActivity.this);
+                }
+            }).show();
+        }
     }
 
     @Override
@@ -225,8 +232,9 @@ public class StockListActivity extends AppCompatActivity implements
             mDialog = new MaterialDialog.Builder(this).title(R.string.symbol_search)
                     .inputType(InputType.TYPE_CLASS_TEXT)
                     .autoDismiss(true)
+                    .positiveText(R.string.add)
                     .negativeText(R.string.disagree)
-                    .input(R.string.input_hint, R.string.input_pre_fill,
+                    .input(R.string.input_hint, R.string.input_pre_fill, false,
                             new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
@@ -237,7 +245,12 @@ public class StockListActivity extends AppCompatActivity implements
 
         } else {
             Snackbar.make(mCoordinatorLayout, getString(R.string.network_snackbar),
-                    Snackbar.LENGTH_LONG).show();
+                    Snackbar.LENGTH_LONG).setAction(R.string.try_again, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showDialogForAddingStock();
+                }
+            }).show();
         }
     }
 
@@ -269,10 +282,8 @@ public class StockListActivity extends AppCompatActivity implements
                 null);
 
         if (cursor != null && cursor.getCount() != 0) {
-            Toast toast = Toast.makeText(this, R.string.stock_already_saved,
-                    Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
-            toast.show();
+            Snackbar.make(mCoordinatorLayout, R.string.stock_already_saved,
+                    Snackbar.LENGTH_LONG).show();
         } else {
             Intent stockIntentService = new Intent(this,
                     StockIntentService.class);

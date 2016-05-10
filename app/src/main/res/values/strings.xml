@@ -27,4 +27,7 @@
     <string name="stock_detail_tab3">1MONTH</string>
     <string name="stock_detail_tab_header">NASDAQ: %1$s</string>
     <string name="disagree">Cancel</string>
+    <string name="add">Add</string>
+    <string name="offline">Offline</string>
+    <string name="try_again">Try again</string>
 </resources>
