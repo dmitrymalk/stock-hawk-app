@@ -60,10 +60,12 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     @SuppressWarnings("unused")
     public static String LOG_TAG = StockDetailFragment.class.getSimpleName();
     public static final String ARG_SYMBOL = "ARG_SYMBOL";
+    public static final String EXTRA_CURRENT_TAB = "EXTRA_CURRENT_TAB";
     private static final int CURSOR_LOADER_ID = 1;
     private static final int CURSOR_LOADER_ID_FOR_LINE_CHART = 2;
 
     private String mSymbol;
+    private String mSelectedTab;
 
     @Bind(R.id.stock_symbol)
     TextView mSymbolView;
@@ -93,6 +95,12 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
             getActionBar().setElevation(0);
         }
 
+        if (savedInstanceState == null) {
+            mSelectedTab = getString(R.string.stock_detail_tab1);
+        } else {
+            mSelectedTab = savedInstanceState.getString(EXTRA_CURRENT_TAB);
+        }
+
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
         getLoaderManager().initLoader(CURSOR_LOADER_ID_FOR_LINE_CHART, null, this);
     }
@@ -112,6 +120,12 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(EXTRA_CURRENT_TAB, mSelectedTab);
+    }
+
+    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         if (id == CURSOR_LOADER_ID) {
             return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
@@ -121,11 +135,19 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
                     QuoteColumns.SYMBOL + " = \"" + mSymbol + "\"",
                     null, null);
         } else if (id == CURSOR_LOADER_ID_FOR_LINE_CHART) {
+
+            String sortOrder = QuoteColumns._ID + " ASC LIMIT 5";
+            if (mSelectedTab.equals(getString(R.string.stock_detail_tab2))) {
+                sortOrder = QuoteColumns._ID + " ASC LIMIT 14";
+            } else if (mSelectedTab.equals(getString(R.string.stock_detail_tab3))) {
+                sortOrder = QuoteColumns._ID + " ASC";
+            }
+
             return new CursorLoader(getContext(), QuoteProvider.QuotesHistoricData.CONTENT_URI,
                     new String[]{QuoteHistoricalDataColumns._ID, QuoteHistoricalDataColumns.SYMBOL,
                             QuoteHistoricalDataColumns.BIDPRICE, QuoteHistoricalDataColumns.DATE},
                     QuoteHistoricalDataColumns.SYMBOL + " = \"" + mSymbol + "\"",
-                    null, null);
+                    null, sortOrder);
         } else {
             throw new IllegalStateException();
         }
@@ -150,30 +172,30 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
             String percentChange = data.getString(data.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
             String mixedChange = change + " (" + percentChange + ")";
             mChange.setText(mixedChange);
+
         } else if (loader.getId() == CURSOR_LOADER_ID_FOR_LINE_CHART && data != null &&
                 data.moveToFirst()) {
 
             List<AxisValue> axisValuesX = new ArrayList<>();
             List<PointValue> pointValues = new ArrayList<>();
             int i = -1;
-
             do {
                 i++;
-
                 String date = data.getString(data.getColumnIndex(
                         QuoteHistoricalDataColumns.DATE));
                 String bidPrice = data.getString(data.getColumnIndex(
                         QuoteHistoricalDataColumns.BIDPRICE));
 
-                PointValue pv = new PointValue(i, Float.valueOf(bidPrice));
+                PointValue pv = new PointValue(data.getCount() - 1 - i, Float.valueOf(bidPrice));
                 pv.setLabel(date);
                 pointValues.add(pv);
 
                 if (i != 0 && i % (data.getCount() / 3) == 0) {
-                    AxisValue axisValueX = new AxisValue(i);
+                    AxisValue axisValueX = new AxisValue(data.getCount() - 1 - i);
                     axisValueX.setLabel(date);
                     axisValuesX.add(axisValueX);
                 }
+
             } while (data.moveToNext());
 
             Line line = new Line(pointValues).setColor(Color.WHITE).setCubic(false);
@@ -208,6 +230,8 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
     @Override
     public void onTabChanged(String tabId) {
+        mSelectedTab = tabId;
+        getLoaderManager().restartLoader(CURSOR_LOADER_ID_FOR_LINE_CHART, null, this);
     }
 
     @Nullable
@@ -221,24 +245,26 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
     private void setupTabs() {
         mTabHost.setup();
-
         TabHost.TabSpec tabSpec;
         tabSpec = mTabHost.newTabSpec(getString(R.string.stock_detail_tab1));
         tabSpec.setIndicator(getString(R.string.stock_detail_tab1));
         tabSpec.setContent(android.R.id.tabcontent);
         mTabHost.addTab(tabSpec);
-
         tabSpec = mTabHost.newTabSpec(getString(R.string.stock_detail_tab2));
         tabSpec.setIndicator(getString(R.string.stock_detail_tab2));
         tabSpec.setContent(android.R.id.tabcontent);
         mTabHost.addTab(tabSpec);
-
         tabSpec = mTabHost.newTabSpec(getString(R.string.stock_detail_tab3));
         tabSpec.setIndicator(getString(R.string.stock_detail_tab3));
         tabSpec.setContent(android.R.id.tabcontent);
-
         mTabHost.addTab(tabSpec);
         mTabHost.setOnTabChangedListener(this);
-        mTabHost.setCurrentTab(0);
+        if (mSelectedTab.equals(getString(R.string.stock_detail_tab2))) {
+            mTabHost.setCurrentTab(1);
+        } else if (mSelectedTab.equals(getString(R.string.stock_detail_tab3))) {
+            mTabHost.setCurrentTab(2);
+        } else {
+            mTabHost.setCurrentTab(0);
+        }
     }
 }

@@ -218,7 +218,6 @@ public class StockTaskService extends GcmTaskService {
     private void saveQuoteHistoricalData2Database(List<ResponseGetHistoricalData.Quote> quotes)
             throws RemoteException, OperationApplicationException {
         ContentResolver resolver = mContext.getContentResolver();
-        Collections.reverse(quotes);
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         for (ResponseGetHistoricalData.Quote quote : quotes) {
 
