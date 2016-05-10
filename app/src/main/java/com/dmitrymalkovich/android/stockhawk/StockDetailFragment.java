@@ -74,6 +74,7 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
     private long mId = -1;
     private String mSymbol;
+    private String mBidPrice;
 
     @Bind(R.id.stock_symbol)
     TextView mSymbolView;
@@ -137,6 +138,7 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
             String ebitda = data.getString(data.getColumnIndex(QuoteColumns.BIDPRICE));
             mEbitdaView.setText(ebitda);
+            mBidPrice = ebitda;
 
             String name = data.getString(data.getColumnIndex(QuoteColumns.NAME));
             if (getActionBar() != null) {
@@ -165,7 +167,7 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
 
         Calendar calEnd = Calendar.getInstance();
         calEnd.setTime(currentDate);
-        calEnd.add(Calendar.DATE, 0);
+        calEnd.add(Calendar.DATE, -1);
 
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(currentDate);
@@ -195,6 +197,21 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
                 axisValuesX.add(axisValueX);
             }
         }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date currentDate = new Date();
+
+        PointValue pv = new PointValue(quotes.size(), Float.valueOf(mBidPrice));
+        pv.setLabel(dateFormat.format(currentDate));
+        pointValues.add(pv);
+
+        if (quotes.size() != 0 && quotes.size() % 2 == 0) {
+
+            AxisValue axisValueX = new AxisValue(quotes.size());
+            axisValueX.setLabel(dateFormat.format(currentDate));
+            axisValuesX.add(axisValueX);
+        }
+
 
         Line line = new Line(pointValues).setColor(Color.WHITE).setCubic(false);
         List<Line> lines = new ArrayList<>();

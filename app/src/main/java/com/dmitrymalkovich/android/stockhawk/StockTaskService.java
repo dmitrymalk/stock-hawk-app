@@ -25,6 +25,7 @@ import android.database.DatabaseUtils;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.dmitrymalkovich.android.stockhawk.network.ResponseGetHistoricalData;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
@@ -37,8 +38,12 @@ import com.dmitrymalkovich.android.stockhawk.network.ResponseGetStocks;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -77,6 +82,8 @@ public class StockTaskService extends GcmTaskService {
             return GcmNetworkManager.RESULT_FAILURE;
         }
         try {
+
+            // Load relevant data about stocks
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(StocksDatabaseService.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
@@ -86,17 +93,17 @@ public class StockTaskService extends GcmTaskService {
                     + buildUrl(params)
                     + ")";
 
-            // UGLY : JSON is different if we request data multiple stocks.
+            // UGLY : JSON is different, if we request data for multiple stocks and single stock.
             if (params.getTag().equals(StockIntentService.ACTION_INIT)) {
                 Call<ResponseGetStocks> call = service.getStocks(query);
                 Response<ResponseGetStocks> response = call.execute();
                 ResponseGetStocks responseGetStocks = response.body();
-                saveData(responseGetStocks.getStockQuotes());
+                saveQuotes2Database(responseGetStocks.getStockQuotes());
             } else {
                 Call<ResponseGetStock> call = service.getStock(query);
                 Response<ResponseGetStock> response = call.execute();
                 ResponseGetStock responseGetStock = response.body();
-                saveData(responseGetStock.getStockQuotes());
+                saveQuotes2Database(responseGetStock.getStockQuotes());
             }
 
             return GcmNetworkManager.RESULT_SUCCESS;
@@ -142,7 +149,7 @@ public class StockTaskService extends GcmTaskService {
         }
     }
 
-    private void saveData(List<StockQuote> quotes) throws RemoteException, OperationApplicationException {
+    private void saveQuotes2Database(List<StockQuote> quotes) throws RemoteException, OperationApplicationException {
         ContentResolver resolver = mContext.getContentResolver();
 
         // Update is_current to 0 (false), so new data is current.
@@ -155,6 +162,61 @@ public class StockTaskService extends GcmTaskService {
 
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         for (StockQuote quote : quotes) {
+
+            batchOperations.add(QuoteProvider.buildBatchOperation(quote));
+
+            // Load historical data for the quote
+            try {
+                loadHistoricalData(quote);
+            } catch (IOException | RemoteException | OperationApplicationException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+            }
+        }
+
+        resolver.applyBatch(QuoteProvider.AUTHORITY, batchOperations);
+    }
+
+    private void loadHistoricalData(StockQuote quote) throws IOException, RemoteException,
+            OperationApplicationException {
+
+        // Load historic stock data
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date currentDate = new Date();
+
+        Calendar calEnd = Calendar.getInstance();
+        calEnd.setTime(currentDate);
+        calEnd.add(Calendar.DATE, 0);
+
+        Calendar calStart = Calendar.getInstance();
+        calStart.setTime(currentDate);
+        calStart.add(Calendar.MONTH, -1);
+
+        String startDate = dateFormat.format(calStart.getTime());
+        String endDate = dateFormat.format(calEnd.getTime());
+
+        String query = "select * from yahoo.finance.historicaldata where symbol=\"" +
+                quote.getSymbol() +
+                "\" and startDate=\"" + startDate + "\" and endDate=\"" + endDate + "\"";
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(StocksDatabaseService.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        StocksDatabaseService service = retrofit.create(StocksDatabaseService.class);
+        Call<ResponseGetHistoricalData> call = service.getStockHistoricalData(query);
+        Response<ResponseGetHistoricalData> response;
+        response = call.execute();
+        ResponseGetHistoricalData responseGetHistoricalData = response.body();
+        if (responseGetHistoricalData != null) {
+            saveQuoteHistoricData2Database(responseGetHistoricalData.getHistoricData());
+        }
+    }
+
+    private void saveQuoteHistoricData2Database(List<ResponseGetHistoricalData.Quote> quotes)
+            throws RemoteException, OperationApplicationException {
+        ContentResolver resolver = mContext.getContentResolver();
+        ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
+        for (ResponseGetHistoricalData.Quote quote : quotes) {
             batchOperations.add(QuoteProvider.buildBatchOperation(quote));
         }
 

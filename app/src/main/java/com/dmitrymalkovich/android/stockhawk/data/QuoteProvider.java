@@ -18,6 +18,7 @@ package com.dmitrymalkovich.android.stockhawk.data;
 import android.content.ContentProviderOperation;
 import android.net.Uri;
 
+import com.dmitrymalkovich.android.stockhawk.network.ResponseGetHistoricalData;
 import com.dmitrymalkovich.android.stockhawk.network.StockQuote;
 
 import net.simonvt.schematic.annotation.ContentProvider;
@@ -40,6 +41,7 @@ public class QuoteProvider {
 
     interface Path {
         String QUOTES = "quotes";
+        String QUOTES_HISTORIC_DATA = "quotes_historical_data";
     }
 
     private static Uri buildUri(String... paths) {
@@ -48,6 +50,15 @@ public class QuoteProvider {
             builder.appendPath(path);
         }
         return builder.build();
+    }
+
+    @TableEndpoint(table = QuoteDatabase.QUOTES_HISTORICAL_DATA)
+    public static class QuotesHistoricData {
+        @ContentUri(
+                path = Path.QUOTES_HISTORIC_DATA,
+                type = "vnd.android.cursor.dir/quote_historical_data"
+        )
+        public static final Uri CONTENT_URI = buildUri(Path.QUOTES_HISTORIC_DATA);
     }
 
     @TableEndpoint(table = QuoteDatabase.QUOTES)
@@ -68,6 +79,15 @@ public class QuoteProvider {
         public static Uri withSymbol(String symbol) {
             return buildUri(Path.QUOTES, symbol);
         }
+    }
+
+    public static ContentProviderOperation buildBatchOperation(ResponseGetHistoricalData.Quote quote) {
+        ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
+                QuoteProvider.QuotesHistoricData.CONTENT_URI);
+        builder.withValue(QuoteHistoricalDataColumns.SYMBOL, quote.getSymbol());
+        builder.withValue(QuoteHistoricalDataColumns.BIDPRICE, quote.getOpen());
+        builder.withValue(QuoteHistoricalDataColumns.DATE, quote.getDate());
+        return builder.build();
     }
 
     public static ContentProviderOperation buildBatchOperation(StockQuote quote) {
