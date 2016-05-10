@@ -219,7 +219,7 @@ public class StockListActivity extends AppCompatActivity implements
     public void onItemClick(View v, int position) {
         if (mTwoPane) {
             Bundle arguments = new Bundle();
-            arguments.putLong(StockDetailFragment.ARG_ITEM_ID, mAdapter.getItemId(position));
+            arguments.putString(StockDetailFragment.ARG_SYMBOL, mAdapter.getSymbol(position));
             StockDetailFragment fragment = new StockDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -228,7 +228,7 @@ public class StockListActivity extends AppCompatActivity implements
         } else {
             Context context = v.getContext();
             Intent intent = new Intent(context, StockDetailActivity.class);
-            intent.putExtra(StockDetailFragment.ARG_ITEM_ID, mAdapter.getItemId(position));
+            intent.putExtra(StockDetailFragment.ARG_SYMBOL, mAdapter.getSymbol(position));
             context.startActivity(intent);
         }
     }

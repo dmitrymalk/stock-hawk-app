@@ -84,9 +84,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
     @Override
     public void onItemDismiss(int position) {
-        Cursor c = getCursor();
-        c.moveToPosition(position);
-        String symbol = c.getString(c.getColumnIndex(QuoteColumns.SYMBOL));
+        String symbol = getSymbol(position);
         mContext.getContentResolver().delete(QuoteProvider.Quotes.withSymbol(symbol), null, null);
         notifyItemRemoved(position);
     }
@@ -94,6 +92,12 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
     @Override
     public int getItemCount() {
         return super.getItemCount();
+    }
+
+    public String getSymbol(int position) {
+        Cursor c = getCursor();
+        c.moveToPosition(position);
+        return c.getString(c.getColumnIndex(QuoteColumns.SYMBOL));
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder

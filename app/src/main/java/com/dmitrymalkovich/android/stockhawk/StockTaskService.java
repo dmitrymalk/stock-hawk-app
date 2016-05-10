@@ -25,6 +25,7 @@ import android.database.DatabaseUtils;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.dmitrymalkovich.android.stockhawk.data.QuoteHistoricalDataColumns;
 import com.dmitrymalkovich.android.stockhawk.network.ResponseGetHistoricalData;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
@@ -41,6 +42,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -208,15 +210,21 @@ public class StockTaskService extends GcmTaskService {
         response = call.execute();
         ResponseGetHistoricalData responseGetHistoricalData = response.body();
         if (responseGetHistoricalData != null) {
-            saveQuoteHistoricData2Database(responseGetHistoricalData.getHistoricData());
+            saveQuoteHistoricalData2Database(responseGetHistoricalData.getHistoricData());
         }
     }
 
-    private void saveQuoteHistoricData2Database(List<ResponseGetHistoricalData.Quote> quotes)
+    private void saveQuoteHistoricalData2Database(List<ResponseGetHistoricalData.Quote> quotes)
             throws RemoteException, OperationApplicationException {
         ContentResolver resolver = mContext.getContentResolver();
+        Collections.reverse(quotes);
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         for (ResponseGetHistoricalData.Quote quote : quotes) {
+
+            // First, we have to delete outdated date from DB.
+            resolver.delete(QuoteProvider.QuotesHistoricData.CONTENT_URI,
+                    QuoteHistoricalDataColumns.SYMBOL + " = \"" + quote.getSymbol() + "\"", null);
+
             batchOperations.add(QuoteProvider.buildBatchOperation(quote));
         }
 

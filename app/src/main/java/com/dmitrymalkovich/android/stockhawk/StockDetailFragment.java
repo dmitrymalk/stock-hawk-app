@@ -17,7 +17,6 @@ package com.dmitrymalkovich.android.stockhawk;
 
 import android.database.Cursor;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -34,16 +33,11 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.dmitrymalkovich.android.stockhawk.data.QuoteColumns;
+import com.dmitrymalkovich.android.stockhawk.data.QuoteHistoricalDataColumns;
 import com.dmitrymalkovich.android.stockhawk.data.QuoteProvider;
-import com.dmitrymalkovich.android.stockhawk.network.FetchStockHistoricData;
-import com.dmitrymalkovich.android.stockhawk.network.ResponseGetHistoricalData;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -61,20 +55,15 @@ import lecho.lib.hellocharts.view.LineChartView;
  * on handsets.
  */
 public class StockDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>,
-        TabHost.OnTabChangeListener, FetchStockHistoricData.Listener {
+        TabHost.OnTabChangeListener {
 
     @SuppressWarnings("unused")
     public static String LOG_TAG = StockDetailFragment.class.getSimpleName();
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
-    public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_SYMBOL = "ARG_SYMBOL";
     private static final int CURSOR_LOADER_ID = 1;
+    private static final int CURSOR_LOADER_ID_FOR_LINE_CHART = 2;
 
-    private long mId = -1;
     private String mSymbol;
-    private String mBidPrice;
 
     @Bind(R.id.stock_symbol)
     TextView mSymbolView;
@@ -96,13 +85,16 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            mId = getArguments().getLong(ARG_ITEM_ID);
+        if (getArguments().containsKey(ARG_SYMBOL)) {
+            mSymbol = getArguments().getString(ARG_SYMBOL);
         }
 
         if (getActionBar() != null) {
             getActionBar().setElevation(0);
         }
+
+        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
+        getLoaderManager().initLoader(CURSOR_LOADER_ID_FOR_LINE_CHART, null, this);
     }
 
     @Override
@@ -117,28 +109,37 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
-                new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
-                        QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP,
-                        QuoteColumns.NAME},
-                QuoteColumns._ID + " = " + mId,
-                null, null);
+        if (id == CURSOR_LOADER_ID) {
+            return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
+                    new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
+                            QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP,
+                            QuoteColumns.NAME},
+                    QuoteColumns.SYMBOL + " = \"" + mSymbol + "\"",
+                    null, null);
+        } else if (id == CURSOR_LOADER_ID_FOR_LINE_CHART) {
+            return new CursorLoader(getContext(), QuoteProvider.QuotesHistoricData.CONTENT_URI,
+                    new String[]{QuoteHistoricalDataColumns._ID, QuoteHistoricalDataColumns.SYMBOL,
+                            QuoteHistoricalDataColumns.BIDPRICE, QuoteHistoricalDataColumns.DATE},
+                    QuoteHistoricalDataColumns.SYMBOL + " = \"" + mSymbol + "\"",
+                    null, null);
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (data != null && data.moveToFirst()) {
-            mSymbol = data.getString(data.getColumnIndex(QuoteColumns.SYMBOL));
-            mSymbolView.setText(getString(R.string.stock_detail_tab_header, mSymbol));
+        if (loader.getId() == CURSOR_LOADER_ID && data != null && data.moveToFirst()) {
+
+            String symbol = data.getString(data.getColumnIndex(QuoteColumns.SYMBOL));
+            mSymbolView.setText(getString(R.string.stock_detail_tab_header, symbol));
 
             String ebitda = data.getString(data.getColumnIndex(QuoteColumns.BIDPRICE));
             mEbitdaView.setText(ebitda);
-            mBidPrice = ebitda;
 
             String name = data.getString(data.getColumnIndex(QuoteColumns.NAME));
             if (getActionBar() != null) {
@@ -149,92 +150,64 @@ public class StockDetailFragment extends Fragment implements LoaderManager.Loade
             String percentChange = data.getString(data.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
             String mixedChange = change + " (" + percentChange + ")";
             mChange.setText(mixedChange);
+        } else if (loader.getId() == CURSOR_LOADER_ID_FOR_LINE_CHART && data != null &&
+                data.moveToFirst()) {
 
-            onTabChanged(getString(R.string.stock_detail_tab1));
+            List<AxisValue> axisValuesX = new ArrayList<>();
+            List<PointValue> pointValues = new ArrayList<>();
+            int i = -1;
+
+            do {
+                i++;
+
+                String date = data.getString(data.getColumnIndex(
+                        QuoteHistoricalDataColumns.DATE));
+                String bidPrice = data.getString(data.getColumnIndex(
+                        QuoteHistoricalDataColumns.BIDPRICE));
+
+                PointValue pv = new PointValue(i, Float.valueOf(bidPrice));
+                pv.setLabel(date);
+                pointValues.add(pv);
+
+                if (i != 0 && i % (data.getCount() / 3) == 0) {
+                    AxisValue axisValueX = new AxisValue(i);
+                    axisValueX.setLabel(date);
+                    axisValuesX.add(axisValueX);
+                }
+            } while (data.moveToNext());
+
+            Line line = new Line(pointValues).setColor(Color.WHITE).setCubic(false);
+            List<Line> lines = new ArrayList<>();
+            lines.add(line);
+
+            LineChartData lineChartData = new LineChartData();
+            lineChartData.setLines(lines);
+
+            Axis axisX = new Axis(axisValuesX);
+            axisX.setHasLines(true);
+            axisX.setMaxLabelChars(4);
+            lineChartData.setAxisXBottom(axisX);
+
+            Axis axisY = new Axis();
+            axisY.setAutoGenerated(true);
+            axisY.setHasLines(true);
+            axisY.setMaxLabelChars(4);
+            lineChartData.setAxisYLeft(axisY);
+
+            mChart.setInteractive(false);
+            mChart.setLineChartData(lineChartData);
+            mChart.setVisibility(View.VISIBLE);
+            mTabContent.setVisibility(View.VISIBLE);
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        // Nothing to do
     }
 
     @Override
     public void onTabChanged(String tabId) {
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Date currentDate = new Date();
-
-        Calendar calEnd = Calendar.getInstance();
-        calEnd.setTime(currentDate);
-        calEnd.add(Calendar.DATE, -1);
-
-        Calendar calStart = Calendar.getInstance();
-        calStart.setTime(currentDate);
-        calStart.add(Calendar.DATE, -30);
-
-        new FetchStockHistoricData(mSymbol,
-                dateFormat.format(calStart.getTime()),
-                dateFormat.format(calEnd.getTime()),
-                this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    @Override
-    public void onFetchedStockHistoricData(List<ResponseGetHistoricalData.Quote> quotes) {
-
-        List<AxisValue> axisValuesX = new ArrayList<>();
-        List<PointValue> pointValues = new ArrayList<>();
-
-        for (int i = 0; i < quotes.size(); i++) {
-            ResponseGetHistoricalData.Quote quote = quotes.get(i);
-            PointValue pv = new PointValue(i, Float.valueOf(quote.getOpen()));
-            pv.setLabel(quote.getDate());
-            pointValues.add(pv);
-
-            if (i != 0 && i % 2 == 0) {
-                AxisValue axisValueX = new AxisValue(i);
-                axisValueX.setLabel(quote.getDate());
-                axisValuesX.add(axisValueX);
-            }
-        }
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Date currentDate = new Date();
-
-        PointValue pv = new PointValue(quotes.size(), Float.valueOf(mBidPrice));
-        pv.setLabel(dateFormat.format(currentDate));
-        pointValues.add(pv);
-
-        if (quotes.size() != 0 && quotes.size() % 2 == 0) {
-
-            AxisValue axisValueX = new AxisValue(quotes.size());
-            axisValueX.setLabel(dateFormat.format(currentDate));
-            axisValuesX.add(axisValueX);
-        }
-
-
-        Line line = new Line(pointValues).setColor(Color.WHITE).setCubic(false);
-        List<Line> lines = new ArrayList<>();
-        lines.add(line);
-
-        LineChartData data = new LineChartData();
-        data.setLines(lines);
-
-        Axis axisX = new Axis(axisValuesX);
-        axisX.setHasLines(true);
-        axisX.setMaxLabelChars(4);
-        data.setAxisXBottom(axisX);
-
-        Axis axisY = new Axis();
-        axisY.setAutoGenerated(true);
-        axisY.setHasLines(true);
-        axisY.setMaxLabelChars(4);
-        data.setAxisYLeft(axisY);
-
-        mChart.setInteractive(false);
-        mChart.setLineChartData(data);
-        mChart.setVisibility(View.VISIBLE);
-        mTabContent.setVisibility(View.VISIBLE);
     }
 
     @Nullable
