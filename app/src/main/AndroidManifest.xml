@@ -45,7 +45,7 @@
         <provider
             android:name=".data.generated.QuoteProvider"
             android:authorities="com.dmitrymalkovich.android.stockhawk.data.QuoteProvider"
-            android:exported="false" />
+            android:exported="true" />
 
         <activity
             android:name=".StockListActivity"
@@ -63,6 +63,19 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.dmitrymalkovich.android.stockhawk.StockListActivity" />
         </activity>
-    </application>
 
+        <service
+            android:name=".appwidget.StockWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver android:name=".appwidget.StockWidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/stock_widget_metadata" />
+        </receiver>
+
+    </application>
 </manifest>

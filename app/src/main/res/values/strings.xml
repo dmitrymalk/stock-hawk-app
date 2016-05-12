@@ -30,4 +30,5 @@
     <string name="add">Add</string>
     <string name="offline">Offline</string>
     <string name="try_again">Try again</string>
+    <string name="widget_name">Stock Hawk</string>
 </resources>
