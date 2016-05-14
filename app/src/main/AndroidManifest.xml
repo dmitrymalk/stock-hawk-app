@@ -59,7 +59,7 @@
 
         <activity
             android:name=".StockDetailActivity"
-            android:label="@string/title_stock_detail">
+            android:label="@string/stock_detail_title">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.dmitrymalkovich.android.stockhawk.StockListActivity" />

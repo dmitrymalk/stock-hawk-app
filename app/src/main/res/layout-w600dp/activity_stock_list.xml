@@ -35,7 +35,9 @@
             android:layout_height="match_parent"
             tools:listitem="@layout/stock_list_content" />
 
-        <include layout="@layout/empty_state_connection" />
+        <include layout="@layout/empty_state_no_connection" />
+
+        <include layout="@layout/empty_state_no_stocks" />
 
         <ProgressBar
             android:id="@+id/progress"

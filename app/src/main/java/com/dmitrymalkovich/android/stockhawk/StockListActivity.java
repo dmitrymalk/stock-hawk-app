@@ -23,6 +23,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -75,8 +76,10 @@ public class StockListActivity extends AppCompatActivity implements
 
     @Bind(R.id.stock_list)
     RecyclerView mRecyclerView;
-    @Bind(R.id.empty_state_container)
-    View mEmptyStateView;
+    @Bind(R.id.empty_state_no_connection)
+    View mEmptyStateNoConnection;
+    @Bind(R.id.empty_state_no_stocks)
+    View mEmptyStateNoStocks;
     @Bind(R.id.progress)
     ProgressBar mProgressBar;
     @Bind(R.id.coordinator_layout)
@@ -189,7 +192,8 @@ public class StockListActivity extends AppCompatActivity implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        mEmptyStateView.setVisibility(View.GONE);
+        mEmptyStateNoConnection.setVisibility(View.GONE);
+        mEmptyStateNoStocks.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
                 new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
@@ -203,10 +207,18 @@ public class StockListActivity extends AppCompatActivity implements
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mProgressBar.setVisibility(View.GONE);
         mAdapter.swapCursor(data);
-        if (mAdapter.getItemCount() == 0 && !isNetworkAvailable()) {
-            mEmptyStateView.setVisibility(View.VISIBLE);
-        } else {
-            mEmptyStateView.setVisibility(View.GONE);
+
+        if (mAdapter.getItemCount() == 0) {
+            if (!isNetworkAvailable()) {
+                mEmptyStateNoConnection.setVisibility(View.VISIBLE);
+            } else {
+                mEmptyStateNoStocks.setVisibility(View.VISIBLE);
+            }
+        }
+        else
+        {
+            mEmptyStateNoConnection.setVisibility(View.GONE);
+            mEmptyStateNoStocks.setVisibility(View.GONE);
         }
 
         if (!isNetworkAvailable()) {
@@ -272,29 +284,39 @@ public class StockListActivity extends AppCompatActivity implements
         }
     }
 
-    private void addStockQuote(String stockQuote) {
+    private void addStockQuote(final String stockQuote) {
         // On FAB click, receive user input. Make sure the stock doesn't already exist
         // in the DB and proceed accordingly.
-        Cursor cursor = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                new String[]{QuoteColumns.SYMBOL},
-                QuoteColumns.SYMBOL + "= ?",
-                new String[]{stockQuote},
-                null);
+        new AsyncTask<Void, Void, Boolean>() {
 
-        if (cursor != null && cursor.getCount() != 0) {
-            Snackbar.make(mCoordinatorLayout, R.string.stock_already_saved,
-                    Snackbar.LENGTH_LONG).show();
-        } else {
-            Intent stockIntentService = new Intent(this,
-                    StockIntentService.class);
-            stockIntentService.putExtra(StockIntentService.EXTRA_TAG, StockIntentService.ACTION_ADD);
-            stockIntentService.putExtra(StockIntentService.EXTRA_SYMBOL, stockQuote);
-            startService(stockIntentService);
-        }
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                Cursor cursor = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+                        new String[]{QuoteColumns.SYMBOL},
+                        QuoteColumns.SYMBOL + "= ?",
+                        new String[]{stockQuote},
+                        null);
+                if (cursor != null) {
+                    cursor.close();
+                    return cursor.getCount() != 0;
+                }
+                return Boolean.FALSE;
+            }
 
-        if (cursor != null) {
-            cursor.close();
-        }
+            @Override
+            protected void onPostExecute(Boolean stockAlreadySaved) {
+                if (stockAlreadySaved) {
+                    Snackbar.make(mCoordinatorLayout, R.string.stock_already_saved,
+                            Snackbar.LENGTH_LONG).show();
+                } else {
+                    Intent stockIntentService = new Intent(StockListActivity.this,
+                            StockIntentService.class);
+                    stockIntentService.putExtra(StockIntentService.EXTRA_TAG, StockIntentService.ACTION_ADD);
+                    stockIntentService.putExtra(StockIntentService.EXTRA_SYMBOL, stockQuote);
+                    startService(stockIntentService);
+                }
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private boolean isNetworkAvailable() {

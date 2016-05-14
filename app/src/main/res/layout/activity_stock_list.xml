@@ -30,7 +30,9 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <include layout="@layout/empty_state_connection" />
+    <include layout="@layout/empty_state_no_connection" />
+
+    <include layout="@layout/empty_state_no_stocks" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

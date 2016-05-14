@@ -12,7 +12,7 @@
   limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/empty_state_container"
+    android:id="@+id/empty_state_no_connection"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="@string/title_for_empty_view"
+        android:text="@string/empty_view_no_connection_title"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@color/empty_view_text_color" />
 
@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="@string/text_for_empty_view"
+        android:text="@string/empty_view_no_connection_message"
         android:textColor="@color/empty_view_text_color" />
 
 </LinearLayout>
