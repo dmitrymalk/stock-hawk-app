@@ -105,7 +105,7 @@ public class StockListActivity extends AppCompatActivity implements
             if (isNetworkAvailable()) {
                 startService(stackServiceIntent);
             } else {
-                Snackbar.make(mCoordinatorLayout, getString(R.string.network_snackbar),
+                Snackbar.make(mCoordinatorLayout, getString(R.string.no_internet_connection),
                         Snackbar.LENGTH_LONG).show();
             }
         } else {
@@ -229,7 +229,7 @@ public class StockListActivity extends AppCompatActivity implements
     @OnClick(R.id.fab)
     public void showDialogForAddingStock() {
         if (isNetworkAvailable()) {
-            mDialog = new MaterialDialog.Builder(this).title(R.string.symbol_search)
+            mDialog = new MaterialDialog.Builder(this).title(R.string.add_symbol)
                     .inputType(InputType.TYPE_CLASS_TEXT)
                     .autoDismiss(true)
                     .positiveText(R.string.add)
@@ -244,7 +244,7 @@ public class StockListActivity extends AppCompatActivity implements
             mDialog.show();
 
         } else {
-            Snackbar.make(mCoordinatorLayout, getString(R.string.network_snackbar),
+            Snackbar.make(mCoordinatorLayout, getString(R.string.no_internet_connection),
                     Snackbar.LENGTH_LONG).setAction(R.string.try_again, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -11,6 +11,7 @@
   limitations under the License.
 -->
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -21,53 +22,66 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
+        <android.support.v7.widget.GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/material_blue_500"
-            android:orientation="vertical">
+            android:paddingEnd="@dimen/material_default_padding"
+            android:paddingLeft="@dimen/material_default_padding"
+            android:paddingRight="@dimen/material_default_padding"
+            android:paddingStart="@dimen/material_default_padding"
+            app:columnCount="2">
+
+            <TextView
+                android:id="@+id/stock_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                app:layout_columnSpan="2"
+                app:layout_columnWeight="1"
+                app:layout_rowWeight="1" />
 
             <TextView
                 android:id="@+id/stock_symbol"
-                style="?android:attr/textAppearanceMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/detail_change_container_vertical_padding"
-                android:paddingLeft="@dimen/detail_change_container_horizontal_padding"
-                android:paddingRight="@dimen/detail_change_container_horizontal_padding"
-                android:textIsSelectable="true"
-                android:textSize="@dimen/detail_stock_symbol_text_size" />
+                android:paddingTop="@dimen/stock_symbol_horizontal_padding"
+                android:textAllCaps="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_columnSpan="2"
+                app:layout_columnWeight="1"
+                app:layout_rowWeight="1" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <RelativeLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingBottom="@dimen/detail_change_container_vertical_padding"
-                android:paddingLeft="@dimen/detail_change_container_horizontal_padding"
-                android:paddingRight="@dimen/detail_change_container_horizontal_padding"
-                android:weightSum="4">
+                android:paddingTop="@dimen/material_default_padding"
+                app:layout_columnSpan="2"
+                app:layout_columnWeight="1"
+                app:layout_rowWeight="1">
 
                 <TextView
-                    android:id="@+id/stock_ebitda"
-                    style="?android:attr/textAppearanceLarge"
-                    android:layout_width="0dp"
+                    android:id="@+id/stock_bidprice"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:textIsSelectable="true"
-                    android:textSize="@dimen/stock_ebitda_text_size" />
+                    android:gravity="start|center_vertical"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                    android:textSize="@dimen/stock_bidprice_text_size" />
 
                 <TextView
-                    android:id="@+id/change"
-                    style="?android:attr/textAppearanceLarge"
-                    android:layout_width="0dp"
+                    android:id="@+id/stock_change"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:gravity="end"
-                    android:textSize="@dimen/detail_change_text_size" />
+                    android:layout_alignBaseline="@+id/stock_bidprice"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                    android:textStyle="bold"
+                    tools:ignore="RelativeOverlap" />
 
-            </LinearLayout>
+            </RelativeLayout>
 
-        </LinearLayout>
+        </android.support.v7.widget.GridLayout>
 
         <TabHost
             android:id="@android:id/tabhost"
@@ -91,7 +105,7 @@
                     android:layout_height="match_parent">
 
                     <lecho.lib.hellocharts.view.LineChartView
-                        android:id="@+id/chart"
+                        android:id="@+id/stock_chart"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:padding="@dimen/line_chart_padding"

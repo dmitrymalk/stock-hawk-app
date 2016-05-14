@@ -17,20 +17,20 @@
     <dimen name="navigation_drawer_width">240dp</dimen>
     <dimen name="empty_state_padding">64dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
-    <dimen name="list_item_stock_horizontal_padding">16dp</dimen>
     <dimen name="list_item_stock_height">72dp</dimen>
-    <dimen name="list_item_stock_price_horizontal_padding">10sp</dimen>
+    <dimen name="list_item_stock_price_horizontal_padding">8dp</dimen>
     <dimen name="list_item_stock_change_horizontal_padding">4dp</dimen>
     <dimen name="list_item_stock_change_vertical_padding">2dp</dimen>
     <dimen name="percent_change_pill_radius">4dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="line_chart_padding">16dp</dimen>
-    <dimen name="stock_ebitda_text_size">42sp</dimen>
+    <dimen name="stock_bidprice_text_size">42sp</dimen>
     <dimen name="detail_change_text_size">16sp</dimen>
-    <dimen name="detail_change_container_horizontal_padding">16dp</dimen>
     <dimen name="detail_change_container_vertical_padding">8dp</dimen>
     <dimen name="detail_stock_symbol_text_size">18sp</dimen>
     <dimen name="widget_height">80dp</dimen>
     <dimen name="widget_width">220dp</dimen>
     <dimen name="widget_margin">8dp</dimen>
+    <dimen name="stock_symbol_horizontal_padding">8dp</dimen>
+    <dimen name="material_default_padding">16dp</dimen>
 </resources>

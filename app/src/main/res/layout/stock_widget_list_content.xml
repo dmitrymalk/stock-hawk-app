@@ -11,12 +11,8 @@
   limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:clickable="true"
-    android:focusable="true"
-    android:gravity="center_vertical"
     android:orientation="vertical">
 
     <LinearLayout
@@ -24,16 +20,14 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingLeft="@dimen/list_item_stock_horizontal_padding"
-        android:paddingRight="@dimen/list_item_stock_horizontal_padding">
+        android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+        android:paddingRight="@dimen/abc_list_item_padding_horizontal_material">
 
         <TextView
             android:id="@+id/stock_symbol"
-            style="@style/StockSymbolTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="start|center_vertical"
-            tools:text="GOOG" />
+            android:gravity="start|center_vertical" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -43,25 +37,21 @@
 
             <TextView
                 android:id="@+id/bid_price"
-                style="@style/BidPriceTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingEnd="@dimen/list_item_stock_price_horizontal_padding"
                 android:paddingLeft="@dimen/list_item_stock_price_horizontal_padding"
                 android:paddingRight="@dimen/list_item_stock_price_horizontal_padding"
-                android:paddingStart="@dimen/list_item_stock_price_horizontal_padding"
-                tools:text="1000.00" />
+                android:paddingStart="@dimen/list_item_stock_price_horizontal_padding" />
 
             <TextView
-                android:id="@+id/change"
-                style="@style/PercentChangeTextStyle"
+                android:id="@+id/stock_change"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingBottom="@dimen/list_item_stock_change_horizontal_padding"
                 android:paddingLeft="@dimen/list_item_stock_change_horizontal_padding"
                 android:paddingRight="@dimen/list_item_stock_change_horizontal_padding"
-                android:paddingTop="@dimen/list_item_stock_change_horizontal_padding"
-                tools:text="100%" />
+                android:paddingTop="@dimen/list_item_stock_change_horizontal_padding" />
         </LinearLayout>
     </LinearLayout>
 

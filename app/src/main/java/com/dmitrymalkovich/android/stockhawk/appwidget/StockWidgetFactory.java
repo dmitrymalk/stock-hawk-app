@@ -70,7 +70,7 @@ public class StockWidgetFactory implements RemoteViewsService.RemoteViewsFactory
                     mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL)));
             rv.setTextViewText(R.id.bid_price,
                     mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
-            rv.setTextViewText(R.id.change,
+            rv.setTextViewText(R.id.stock_change,
                     mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE)));
         }
         return rv;

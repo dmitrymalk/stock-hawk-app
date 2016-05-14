@@ -46,4 +46,5 @@ dependencies {
     compile 'com.android.support:support-v4:23.3.0'
     compile 'com.android.support:recyclerview-v7:23.3.0'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
+    compile 'com.android.support:gridlayout-v7:23.3.0'
 }
