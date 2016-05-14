@@ -29,16 +29,17 @@ import com.dmitrymalkovich.android.stockhawk.data.QuoteProvider;
 /**
  * Created by Dmitry Malkovich on 11.05.16.
  * </p>
+ * Used to populate the Stock Widget's remote ListView.
  */
 public class StockWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private Cursor mCursor;
-    Context mContext;
-    int widgetID;
+    private Context mContext;
+    int mWidgetId;
 
     public StockWidgetFactory(Context context, Intent intent) {
         mContext = context;
-        widgetID = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+        mWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
     }
 

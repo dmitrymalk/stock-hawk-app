@@ -26,6 +26,7 @@ import com.dmitrymalkovich.android.stockhawk.R;
 /**
  * Created by Dmitry Malkovich on 11.05.16.
  * </p>
+ * Implement functionality for Stock Widget.
  */
 public class StockWidgetProvider extends AppWidgetProvider {
 

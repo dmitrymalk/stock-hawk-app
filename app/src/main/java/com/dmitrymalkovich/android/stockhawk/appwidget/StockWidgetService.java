@@ -21,6 +21,7 @@ import android.widget.RemoteViewsService;
 /**
  * Created by Dmitry Malkovich on 11.05.16.
  * </p>
+ * The service to be connected to for a remote adapter to request RemoteViews for StockWidget.
  */
 public class StockWidgetService extends RemoteViewsService {
 
