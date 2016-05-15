@@ -154,6 +154,12 @@ public class StockTaskService extends GcmTaskService {
     private void saveQuotes2Database(List<StockQuote> quotes) throws RemoteException, OperationApplicationException {
         ContentResolver resolver = mContext.getContentResolver();
 
+        ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
+        for (StockQuote quote : quotes) {
+
+            batchOperations.add(QuoteProvider.buildBatchOperation(quote));
+        }
+
         // Update is_current to 0 (false), so new data is current.
         if (mIsUpdate) {
             ContentValues contentValues = new ContentValues();
@@ -162,11 +168,6 @@ public class StockTaskService extends GcmTaskService {
                     null, null);
         }
 
-        ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
-        for (StockQuote quote : quotes) {
-
-            batchOperations.add(QuoteProvider.buildBatchOperation(quote));
-        }
         resolver.applyBatch(QuoteProvider.AUTHORITY, batchOperations);
 
         for (StockQuote quote : quotes) {
