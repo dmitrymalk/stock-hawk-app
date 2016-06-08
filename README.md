@@ -1,5 +1,5 @@
 # Stock Hawk App
-[![GitHub license](https://img.shields.io/crates/l/rustc-serialize.svg)](https://github.com/DmitryMalkovich/stock-hawk-app/blob/master/LICENSE.txt)
+[![Crates.io](https://img.shields.io/crates/l/rustc-serialize.svg?maxAge=2592000)]()
 
 Stock Hawk is the fourth project in Udacity's Android Developer Nanodegree. The purpose of this project was to diagnose problems and practice improving apps. 
 
